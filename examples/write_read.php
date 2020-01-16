@@ -1,76 +1,59 @@
 #!/usr/bin/env php
-<?php
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
-require_once('../lib/avro.php');
+<?php
+
+require_once 'vendor/autoload.php';
 
 // Write and read a data file
 
-$writers_schema_json = <<<_JSON
-{"name":"member",
- "type":"record",
- "fields":[{"name":"member_id", "type":"int"},
-           {"name":"member_name", "type":"string"}]}
-_JSON;
+$writersSchemaJson = '{"name":"member","type":"record","fields":[{"name":"member_id", "type":"int"},{"name":"member_name", "type":"string"}]}';
 
-$jose = array('member_id' => 1392, 'member_name' => 'Jose');
-$maria = array('member_id' => 1642, 'member_name' => 'Maria');
-$data = array($jose, $maria);
+$jose = ['member_id' => 1392, 'member_name' => 'Jose'];
+$maria = ['member_id' => 1642, 'member_name' => 'Maria'];
+$data = [$jose, $maria];
 
-$file_name = 'data.avr';
-// Open $file_name for writing, using the given writer's schema
-$data_writer = AvroDataIO::open_file($file_name, 'w', $writers_schema_json);
+$file = 'data.avr';
+// Open $file for writing, using the given writer's schema
+$dataWriter = \Avro\DataFile\DataIO::openFile($file, 'w', $writersSchemaJson);
 
 // Write each datum to the file
-foreach ($data as $datum)
-  $data_writer->append($datum);
+foreach ($data as $datum) {
+    $dataWriter->append($datum);
+}
 // Tidy up
-$data_writer->close();
+$dataWriter->close();
 
-// Open $file_name (by default for reading) using the writer's schema
+// Open $file (by default for reading) using the writer's schema
 // included in the file
-$data_reader = AvroDataIO::open_file($file_name);
+$dataReader = \Avro\DataFile\DataIO::openFile($file);
 echo "from file:\n";
 // Read each datum
-foreach ($data_reader->data() as $datum)
-  echo var_export($datum, true) . "\n";
-$data_reader->close();
+foreach ($dataReader->data() as $datum) {
+    echo var_export($datum, true) . "\n";
+}
+$dataReader->close();
 
 // Create a data string
 // Create a string io object.
-$io = new AvroStringIO();
+$io = new \Avro\IO\StringIO();
 // Create a datum writer object
-$writers_schema = AvroSchema::parse($writers_schema_json);
-$writer = new AvroIODatumWriter($writers_schema);
-$data_writer = new AvroDataIOWriter($io, $writer, $writers_schema);
-foreach ($data as $datum)
-   $data_writer->append($datum);
-$data_writer->close();
+$writersSchema = \Avro\Schema\AbstractSchema::parse($writersSchemaJson);
+$writer = new \Avro\Datum\Writer($writersSchema);
+$dataWriter = new \Avro\DataFile\DataIOWriter($io, $writer, $writersSchema);
+foreach ($data as $datum) {
+    $dataWriter->append($datum);
+}
+$dataWriter->close();
 
-$binary_string = $io->string();
+$binaryString = $io->__toString();
 
 // Load the string data string
-$read_io = new AvroStringIO($binary_string);
-$data_reader = new AvroDataIOReader($read_io, new AvroIODatumReader());
+$readIO = new \Avro\IO\StringIO($binaryString);
+$dataReader = new \Avro\DataFile\DataIOReader($readIO, new \Avro\Datum\Reader());
 echo "from binary string:\n";
-foreach ($data_reader->data() as $datum)
-  echo var_export($datum, true) . "\n";
+foreach ($dataReader->data() as $datum) {
+    echo var_export($datum, true) . "\n";
+}
 
 /** Output
 from file:

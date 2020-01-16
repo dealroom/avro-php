@@ -31,28 +31,19 @@
 		}
 	],
 	"require": {
-		"php": ">=5.5.9"
+		"php": ">=7.2",
+		"ext-json": "*"
 	},
 	"require-dev": {
-		"jakub-onderka/php-parallel-lint": "1.0.0",
-		"jakub-onderka/php-console-highlighter": "0.3.2",
-		"mediawiki/minus-x": "0.3.1",
-		"phpunit/phpunit": "4.8.36"
+		"phpunit/phpunit": "^8.0.0"
 	},
 	"suggest": {
 		"ext-gmp": "Large integer support for 32-bit platforms."
 	},
 	"autoload": {
-		"classmap": ["lib/"]
-	},
-	"scripts": {
-		"test": [
-			"parallel-lint . --exclude vendor",
-			"phpunit test/AllTests.php",
-			"minus-x check ."
-		],
-		"fix": [
-			"minus-x fix ."
-		]
+		"psr-4": {
+			"Avro\\": "src/",
+			"Avro\\Tests\\": "tests/"
+		}
 	}
 }
